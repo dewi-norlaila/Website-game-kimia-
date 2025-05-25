@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prinsip Hijau Adventure</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      grid-template-rows: repeat(5, 60px);
+      gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .cell {
+      width: 60px;
+      height: 60px;
+      border: 1px solid #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      color: white;
+      position: relative;
+    }
+
+    .player {
+      background: red;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    #questionBox {
+      margin-top: 20px;
+    }
+
+    button {
+      margin: 5px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .choice {
+      display: block;
+      margin: 5px auto;
+      cursor: pointer;
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Prinsip Hijau Adventure</h1>
+  <div id="board"></div>
+  <button id="rollBtn" onclick="rollDice()">🎲 Roll Dice</button>
+  <p id="diceResult"></p>
+  <div id="questionBox"></div>
+  <p>Score: <span id="score">0</span></p>
+
+  <script>
+    const board = document.getElementById("board");
+    const colors = ["green", "teal", "orange", "blue", "purple"];
+    let position = 0;
+    let score = 0;
+    let turns = 0;
+    const maxTurns = 25;
+
+    const questions = [
+      { question: "Apa itu prinsip kimia hijau?", choices: ["Ilmu membuat senyawa hijau", "Pendekatan untuk mengurangi dampak lingkungan dari bahan kimia", "Mewarnai bahan kimia"], answer: "Pendekatan untuk mengurangi dampak lingkungan dari bahan kimia" },
+      { question: "Sebutkan salah satu tujuan kimia hijau!", choices: ["Membuat polusi lebih banyak", "Menurunkan efisiensi reaksi", "Mengurangi limbah dan bahaya"], answer: "Mengurangi limbah dan bahaya" },
+      { question: "Apa manfaat pengurangan limbah dalam kimia hijau?", choices: ["Biaya naik", "Lingkungan lebih bersih dan hemat biaya", "Bahan kimia jadi tidak efektif"], answer: "Lingkungan lebih bersih dan hemat biaya" },
+      { question: "Berikan contoh bahan kimia ramah lingkungan!", choices: ["Gas klorin", "Air", "Raksa"], answer: "Air" },
+      { question: "Mengapa penting efisiensi energi dalam kimia hijau?", choices: ["Supaya listrik habis", "Untuk menurunkan biaya dan dampak lingkungan", "Agar reaksi lambat"], answer: "Untuk menurunkan biaya dan dampak lingkungan" },
+      { question: "Apa tujuan penggunaan katalis dalam kimia hijau?", choices: ["Memperlambat reaksi", "Mempercepat reaksi tanpa sampah berlebih", "Membuat reaksi beracun"], answer: "Mempercepat reaksi tanpa sampah berlebih" },
+      { question: "Apa arti biodegradabel?", choices: ["Tidak bisa terurai", "Mudah terurai oleh mikroorganisme", "Berbahaya bagi lingkungan"], answer: "Mudah terurai oleh mikroorganisme" },
+      { question: "Apa itu bahan bakar nabati?", choices: ["Bahan bakar fosil", "Bahan bakar dari tumbuhan", "Bahan bakar plastik"], answer: "Bahan bakar dari tumbuhan" },
+      { question: "Salah satu contoh pelarut ramah lingkungan adalah?", choices: ["Benzena", "Air", "Toluena"], answer: "Air" },
+      { question: "Apa yang dimaksud green synthesis?", choices: ["Sintesis tanpa bahan kimia", "Sintesis ramah lingkungan", "Sintesis berbahaya"], answer: "Sintesis ramah lingkungan" },
+      { question: "Apa tujuan penggunaan energi terbarukan?", choices: ["Mengurangi emisi karbon", "Meningkatkan polusi", "Menghabiskan sumber daya"], answer: "Mengurangi emisi karbon" },
+      { question: "Mengapa limbah kimia harus diminimalisir?", choices: ["Agar lingkungan tercemar", "Untuk menjaga kesehatan manusia", "Agar lebih mahal"], answer: "Untuk menjaga kesehatan manusia" },
+      { question: "Apa yang dimaksud dengan toksisitas?", choices: ["Tingkat keparahan racun", "Warna bahan kimia", "Bau bahan kimia"], answer: "Tingkat keparahan racun" },
+      { question: "Apa fungsi dari solvent-free reaction?", choices: ["Tanpa pelarut berbahaya", "Lebih lambat", "Lebih mahal"], answer: "Tanpa pelarut berbahaya" },
+      { question: "Apa itu proses daur ulang kimia?", choices: ["Mengubah limbah jadi bahan baru", "Membuang limbah ke sungai", "Membakar limbah"], answer: "Mengubah limbah jadi bahan baru" },
+      { question: "Apa manfaat energi surya?", choices: ["Energi bersih dan terbarukan", "Menghasilkan polusi", "Tidak efisien"], answer: "Energi bersih dan terbarukan" },
+      { question: "Apa yang dimaksud dengan green packaging?", choices: ["Kemasan ramah lingkungan", "Kemasan plastik", "Kemasan beracun"], answer: "Kemasan ramah lingkungan" },
+      { question: "Mengapa penggunaan bahan berbahaya harus dikurangi?", choices: ["Untuk keselamatan lingkungan dan manusia", "Untuk biaya mahal", "Untuk kerusakan alat"], answer: "Untuk keselamatan lingkungan dan manusia" },
+      { question: "Apa itu energi fosil?", choices: ["Energi terbarukan", "Energi dari bahan organik kuno", "Energi listrik"], answer: "Energi dari bahan organik kuno" },
+      { question: "Apa tujuan utama kimia hijau?", choices: ["Mengurangi dampak negatif terhadap lingkungan", "Meningkatkan polusi", "Meningkatkan biaya produksi"], answer: "Mengurangi dampak negatif terhadap lingkungan" },
+      { question: "Apa itu polutan?", choices: ["Zat yang mencemari lingkungan", "Zat yang membersihkan air", "Zat berwarna"], answer: "Zat yang mencemari lingkungan" },
+      { question: "Apa fungsi proses pemilahan limbah?", choices: ["Memisahkan limbah berdasarkan jenisnya", "Mencampur limbah semua jadi satu", "Membuang limbah sembarangan"], answer: "Memisahkan limbah berdasarkan jenisnya" },
+      { question: "Apa itu reaksi eksotermik?", choices: ["Reaksi yang melepaskan energi", "Reaksi yang menyerap energi", "Reaksi yang tidak terjadi"], answer: "Reaksi yang melepaskan energi" },
+      { question: "Apa yang dimaksud dengan green catalyst?", choices: ["Katalis yang ramah lingkungan", "Katalis beracun", "Katalis mahal"], answer: "Katalis yang ramah lingkungan" },
+      { question: "Apa itu biomassa?", choices: ["Bahan organik sebagai sumber energi", "Bahan plastik", "Bahan logam"], answer: "Bahan organik sebagai sumber energi" }
+    ];
+
+    // Buat papan permainan zigzag 5x5
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 5; col++) {
+        let index = row % 2 === 0 ? row * 5 + col : row * 5 + (4 - col);
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.style.background = colors[index % colors.length];
+        cell.textContent = index + 1;
+        cell.id = "cell-" + index;
+        board.appendChild(cell);
+      }
+    }
+
+    // Tambah pemain
+    const player = document.createElement("div");
+    player.className = "player";
+    document.getElementById("cell-0").appendChild(player);
+
+    function rollDice() {
+      if (turns >= maxTurns) {
+        alert("Permainan selesai! Skor akhir kamu: " + score);
+        document.getElementById("rollBtn").disabled = true;
+        document.getElementById("questionBox").innerHTML = "";
+        return;
+      }
+
+      const dice = Math.floor(Math.random() * 6) + 1;
+      document.getElementById("diceResult").textContent = "Dadu: " + dice;
+
+      const oldCell = document.getElementById("cell-" + position);
+      if (oldCell.contains(player)) oldCell.removeChild(player);
+
+      position += dice;
+      if (position >= 25) position = 24;
+
+      document.getElementById("cell-" + position).appendChild(player);
+
+      const q = questions[position];
+
+      let questionHTML = `<p><strong>${q.question}</strong></p>`;
+      q.choices.forEach(choice => {
+        questionHTML += `<button class="choice" onclick="checkAnswer('${choice}', '${q.answer}')">${choice}</button>`;
+      });
+
+      document.getElementById("questionBox").innerHTML = questionHTML;
+
+      turns++;
+    }
+
+    function checkAnswer(selected, correct) {
+      if (selected === correct) {
+        alert("Jawaban benar!");
+        score += 10;
+      } else {
+        alert("Jawaban salah!");
+      }
+      document.getElementById("score").textContent = score;
+      document.getElementById("questionBox").innerHTML = "";
+    }
+  </script>
+</body>
+</html>
